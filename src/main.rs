@@ -31,11 +31,11 @@ fn main() -> anyhow::Result<()> {
     let grid_path_str = cli.grid
         .to_str()
         .with_context(|| "Grid path given was not valid UTF-8!".to_string())?;
-    let words: Vec<Vec<char>> = std::fs::read_to_string(cli.words.as_path())
+    let words: Vec<String> = std::fs::read_to_string(cli.words.as_path())
         .with_context(|| format!("could not read file `{}`", word_path_str))?
         .trim()
         .lines()
-        .map(|l| l.chars().collect::<Vec<char>>())
+        .map(|s| s.to_string())
         .collect();
     let text_grid: Vec<Vec<char>> = std::fs::read_to_string(cli.grid.as_path())
         .with_context(|| format!("could not read file `{}`", grid_path_str))?
@@ -43,20 +43,18 @@ fn main() -> anyhow::Result<()> {
         .lines()
         .map(|l| l.chars().collect::<Vec<char>>())
         .collect();
-    let grid = match Grid::from_chars(text_grid) {
+    let grid = match Grid::from_vec(text_grid) {
         Ok(g) => g,
         Err(GridParseError::InconsistentLineLengths) => bail!("Grid line lengths are inconsistent!"),
         Err(GridParseError::GridEmpty) => bail!("Grid file is empty!"),
     };
     let coords: Vec<Option<[usize; 2]>> = words.iter()
-        .map(|w| grid.find_word(&w[..]))
+        .map(|w| grid.find_word(w))
         .collect();
 
-    let word_coord_pair: Vec<(String, Option<[usize; 2]>)> = std::iter::zip(
-        words.iter().map(|w| w.iter().collect::<String>()),
-        coords
-    ).collect();
-    for pair in word_coord_pair {
+    let word_coord_pairs: Vec<(String, Option<[usize; 2]>)> = std::iter::zip(words, coords).collect();
+
+    for pair in word_coord_pairs {
         match pair.1 {
             None => println!("{} not found.", pair.0),
             Some([x, y]) => println!("{} at ({}, {})", pair.0, x, y),

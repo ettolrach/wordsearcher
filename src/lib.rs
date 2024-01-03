@@ -21,7 +21,7 @@ pub struct Grid {
     pub height: usize,
 }
 impl Grid {
-    pub fn from_chars(lines: Vec<Vec<char>>) -> Result<Grid, GridParseError> {
+    pub fn from_vec(lines: Vec<Vec<char>>) -> Result<Grid, GridParseError> {
         use GridParseError as GPE;
         if lines.is_empty() {
             return Err(GPE::GridEmpty);
@@ -40,6 +40,7 @@ impl Grid {
             width,
         })
     }
+
     pub fn get_coord(&self, index: usize) -> [usize; 2] {
         [index % self.width, index / self.width]
     }
@@ -68,7 +69,10 @@ impl Grid {
             .map(|&coord| self.get_index(coord.map(|i| i as usize)))
             .collect()
     }
-    pub fn find_word(&self, word: &[char]) -> Option<[usize; 2]> {
+    pub fn find_word(&self, word: &str) -> Option<[usize; 2]> {
+        self.find_char_slice(&word.chars().collect::<Vec<char>>()[..])
+    }
+    pub fn find_char_slice(&self, word: &[char]) -> Option<[usize; 2]> {
         for i in 0..(self.letters.len()) {
             // The tuple represents the index to check and which letter in the word to check from.
             let mut to_check_stack: Vec<(usize, usize)> = vec![(i, 0)];
@@ -124,11 +128,11 @@ HOT
         let grid_chars: Vec<Vec<char>> = grid_txt.lines()
             .map(|l| l.chars().collect::<Vec<char>>())
             .collect();
-        let grid = Grid::from_chars(grid_chars).unwrap();
+        let grid = Grid::from_vec(grid_chars).unwrap();
         let coords: Vec<Option<[usize; 2]>> = words_txt
             .trim()
             .lines()
-            .map(|w| grid.find_word(&w.chars().collect::<Vec<char>>()[..]))
+            .map(|w| grid.find_word(w))
             .collect();
         let expected = vec![
             Some([4, 0]),
