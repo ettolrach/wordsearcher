@@ -76,8 +76,7 @@ impl Grid {
         for i in 0..(self.letters.len()) {
             // The tuple represents the index to check and which letter in the word to check from.
             let mut to_check_stack: Vec<(usize, usize)> = vec![(i, 0)];
-            while !to_check_stack.is_empty() {
-                let next = to_check_stack.pop().unwrap();
+            while let Some(next) = to_check_stack.pop() {
                 if next.1 == word.len() {
                     return Some(self.get_coord(i))
                 }
@@ -102,7 +101,7 @@ mod tests {
     fn example() {
         // Taken from Undertale.
         let grid_txt = String::from(
-            "GIASFCLFUBREHBER
+"GIASFCLFUBREHBER
 NPBAVUUJJCSEOMEO
 IWLSNOTELEKSTMFB
 RLXETMONSTERMNGO
